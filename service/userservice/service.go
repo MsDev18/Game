@@ -3,12 +3,17 @@ package userservice
 import (
 	"fmt"
 	"game/entity"
-	"strconv"
+	"game/pkg/phonenumber"
 )
 
 type Service struct {
+	repo Repository
 }
 
+type Repository interface {
+	IsPhoneNumberUnique(phoneNumber string) (bool, error)
+	Register(u entity.User) (entity.User, error)
+}
 type RegisterRequest struct {
 	Name        string
 	PhoneNumber string
@@ -19,33 +24,38 @@ type RegisterResponse struct {
 }
 
 func (s Service) Register(req RegisterRequest) (RegisterResponse, error) {
-	// 1. validate phone number
-	if !isPhoneNumberValid(req.PhoneNumber) {
+	// Todo - we should verify phone number by verification code
+	// validate phone number
+	if !phonenumber.IsValid(req.PhoneNumber) {
 		return RegisterResponse{}, fmt.Errorf("phone number is not valid")
 	}
-	// 2. check uniqueness of phone number
+	//  check uniqueness of phone number
+	if isUnique, err := s.repo.IsPhoneNumberUnique(req.PhoneNumber); err != nil || !isUnique {
+		if err != nil {
+			return RegisterResponse{}, fmt.Errorf("unexpected error: %w", err)
+		}
 
-	// 3. validate name
-
-	// 4. create new user in storage
-
-	// 5. return created user
-
-}
-
-func isPhoneNumberValid(phoneNumber string) bool {
-	// TODO - we can use regular expression to support +98 pattern
-	if len(phoneNumber) != 11 {
-		return false
+		if !isUnique {
+			return RegisterResponse{}, fmt.Errorf("phone number is not unique")
+		}
+	}
+	// validate name
+	if len(req.Name) < 3 {
+		return RegisterResponse{}, fmt.Errorf("name length should be greater than 3")
 	}
 
-	if phoneNumber[0:2] != "09" {
-		return false
+	user := entity.User{
+		ID:          0,
+		Name:        req.Name,
+		PhoneNumber: req.PhoneNumber,
 	}
-
-	if _, err := strconv.Atoi(phoneNumber[2:]); err != nil {
-		return false
+	// create new user in storage
+	createdUser, err := s.repo.Register(user)
+	if err != nil {
+		return RegisterResponse{}, fmt.Errorf("unexpected error: %w", err)
 	}
-
-	return true
+	// return created user
+	return RegisterResponse{
+		User: createdUser,
+	}, nil
 }
