@@ -13,7 +13,7 @@ type MySQLDB struct {
 }
 
 func New() *MySQLDB {
-	db, err := sql.Open("mysql", "game:game-pass@(localhost:3307)/game")
+	db, err := sql.Open("mysql", "game:game-pass@(localhost:3307)/game?parseTime=true")
 	if err != nil {
 		panic(fmt.Errorf("cant't open mysql db: %v", err))
 	}
