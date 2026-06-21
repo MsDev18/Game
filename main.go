@@ -8,20 +8,20 @@ import (
 )
 
 func main() {
-	// http.HandleFunc("/users/register" , )
-	var u userRegisterHandler
-	http.Handle("/users/register" , u)
 
-	http.ListenAndServe(":8080", nil)
+	http.HandleFunc("/users/register" , userRegisterHandler)
+	err := http.ListenAndServe(":8081", nil)
+	fmt.Println("err: ", err)
 }
 
 
-type userRegisterHandler struct {
 
-}
 // ServeHTTP(ResponseWriter, *Request)
-func (u userRegisterHandler) ServeHTTP (writer http.ResponseWriter , req *http.Request) {
-
+func userRegisterHandler (writer http.ResponseWriter , req *http.Request) {
+	fmt.Println("Here..")
+	if req.Method != http.MethodPost {
+		fmt.Fprintf(writer , "invalid method")
+	}
 }
 
 func tetsUserMysqlRepo() {
