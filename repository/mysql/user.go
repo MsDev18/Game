@@ -16,7 +16,6 @@ func (d *MySQLDB) IsPhoneNumberUnique(phoneNumber string) (bool, error) {
 	err := row.Scan(&user.ID, &user.Name, &user.PhoneNumber, &createdAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			fmt.Println(err)
 			return true, nil
 		}
 		return false, fmt.Errorf("can't scan query result: %w", err)
@@ -32,6 +31,6 @@ func (d *MySQLDB) Register(u entity.User) (entity.User, error) {
 	// error is always nil
 	id, _ := res.LastInsertId()
 	u.ID = uint(id)
-	fmt.Println(u)
+
 	return u, nil
 }
